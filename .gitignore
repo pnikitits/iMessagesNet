@@ -2,3 +2,4 @@ models
 main_other.py
 notes.txt
 __pycache__
+.DS_Store
