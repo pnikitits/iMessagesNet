@@ -1,6 +1,33 @@
 
 import subprocess
 import os
+from vllm import LLM
+from vllm.sampling_params import SamplingParams
+from .image_to_url import local_image_to_data_url
+
+
+
+def run_pixtral(model_dir:str, prompt:str, image_url:str) -> str:
+    
+    llm = LLM(model=model_dir,
+              tokenizer_mode="mistral",
+              limit_mm_per_prompt={"image": 5},
+              max_model_len=32768,
+              gpu_memory_utilization=0.95)
+    sampling_params = SamplingParams(max_tokens=8192, temperature=0.7)
+    
+    messages = [
+        {
+            "role": "user",
+            "content": [{"type": "text", "text": prompt}],
+        }
+    ]
+    
+    image_url = local_image_to_data_url(image_url)
+    messages[0]['content'].append({"type": "image_url", "image_url": {"url": image_url}})
+        
+    outputs = llm.chat(messages=messages, sampling_params=sampling_params)
+    return outputs[0].outputs[0].text
 
 
 
